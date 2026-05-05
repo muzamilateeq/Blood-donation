@@ -2,7 +2,7 @@ import { Droplets } from "lucide-react";
 
 export default function BrandMark({ compact = false, light = false }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex min-w-0 items-center gap-3">
       <div
         className={`flex shrink-0 items-center justify-center rounded-xl shadow-lg ${
           compact ? "h-10 w-10" : "h-12 w-12"
@@ -17,7 +17,7 @@ export default function BrandMark({ compact = false, light = false }) {
       <div className="min-w-0">
         <p
           className={`truncate font-black leading-none ${
-            compact ? "text-lg" : "text-xl"
+            compact ? "text-lg" : "text-lg sm:text-xl"
           } ${light ? "text-white" : "text-zinc-950"}`}
         >
           LifeLink Pakistan

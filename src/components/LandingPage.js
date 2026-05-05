@@ -61,7 +61,7 @@ const registrationSteps = [
 ];
 
 const fieldBaseClass =
-  "h-14 w-full rounded-xl border border-zinc-200 bg-zinc-50 text-base font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100";
+  "h-12 w-full rounded-lg border border-zinc-200 bg-zinc-50/80 text-base font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 sm:h-14 sm:rounded-xl";
 
 const iconFieldClass = `${fieldBaseClass} pl-12 pr-4`;
 const selectFieldClass = `${fieldBaseClass} appearance-none pl-12 pr-12`;
@@ -95,6 +95,7 @@ export default function LandingPage() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [quickLeadError, setQuickLeadError] = useState("");
   const [quickLead, setQuickLead] = useState({ city: "", phone: "" });
   const [step, setStep] = useState(0);
   const [submitError, setSubmitError] = useState("");
@@ -168,6 +169,20 @@ export default function LandingPage() {
 
   const handleQuickSubmit = (event) => {
     event.preventDefault();
+
+    const phonePattern = /^(\+92|0)?3\d{2}[ -]?\d{7}$/;
+
+    if (!quickLead.phone.trim() || !quickLead.city) {
+      setQuickLeadError("Please enter your mobile number and select your city.");
+      return;
+    }
+
+    if (!phonePattern.test(quickLead.phone.trim())) {
+      setQuickLeadError("Enter a valid Pakistani mobile number.");
+      return;
+    }
+
+    setQuickLeadError("");
     openRegistration();
   };
 
@@ -190,6 +205,7 @@ export default function LandingPage() {
 
     try {
       await saveDonorDetails(data);
+      window.sessionStorage.setItem("lifelink-dashboard-access", "granted");
       setIsSaved(true);
       setStep(0);
       reset();
@@ -203,6 +219,7 @@ export default function LandingPage() {
     <main className="min-h-screen bg-white text-zinc-950">
       <HeroSection
         onQuickSubmit={handleQuickSubmit}
+        quickLeadError={quickLeadError}
         quickLead={quickLead}
         setQuickLead={setQuickLead}
       />
@@ -228,36 +245,30 @@ export default function LandingPage() {
   );
 }
 
-function HeroSection({ onQuickSubmit, quickLead, setQuickLead }) {
+function HeroSection({ onQuickSubmit, quickLead, quickLeadError, setQuickLead }) {
   return (
-    <section className="relative isolate overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-2 bg-red-600" />
-      <div className="absolute right-0 top-0 -z-10 hidden h-full w-[38%] bg-red-600 lg:block" />
-      <div className="absolute bottom-0 right-0 -z-10 h-40 w-40 rounded-tl-full bg-red-50 sm:h-64 sm:w-64 lg:hidden" />
+    <section className="relative isolate overflow-hidden bg-[linear-gradient(180deg,#fff_0%,#fff7f7_100%)] lg:bg-white">
+      <div className="absolute inset-x-0 top-0 h-1.5 bg-red-600" />
+      <div className="absolute right-0 top-0 -z-10 hidden h-full w-[35%] bg-red-600 lg:block" />
+      <div className="absolute right-[35%] top-0 -z-10 hidden h-full w-24 bg-[linear-gradient(90deg,#fff_0%,#fff5f5_58%,#dc2626_100%)] lg:block" />
 
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
         <header className="flex items-center justify-between py-3">
           <BrandMark />
-          <a
-            className="hidden h-11 items-center justify-center rounded-xl border border-red-100 px-4 text-sm font-black text-red-700 transition hover:bg-red-50 sm:inline-flex"
-            href="/dashboard"
-          >
-            Search Dashboard
-          </a>
         </header>
 
-        <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[1fr_440px] lg:py-10">
+        <div className="grid flex-1 items-center gap-7 py-6 sm:py-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:gap-10 lg:py-10">
           <div className="max-w-3xl">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-100 bg-red-50 px-4 py-2 text-sm font-bold text-red-700">
+            <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-red-100 bg-white/90 px-3 py-2 text-xs font-bold text-red-700 shadow-sm shadow-red-950/5 sm:mb-6 sm:px-4 sm:text-sm">
               <Activity aria-hidden="true" className="h-4 w-4" />
-              Live donor requests across Pakistan
+              <span className="truncate">Live donor requests across Pakistan</span>
             </div>
 
-            <h1 className="max-w-4xl text-4xl font-black leading-[0.98] text-zinc-950 sm:text-6xl lg:text-7xl">
+            <h1 className="max-w-4xl text-4xl font-black leading-[1.02] text-zinc-950 sm:text-6xl sm:leading-[0.98] lg:text-7xl">
               Find Blood Donors Anywhere in Pakistan.
             </h1>
 
-            <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600 sm:text-xl sm:leading-8">
+            <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg sm:leading-8 lg:text-xl">
               LifeLink Pakistan helps families and hospitals collect urgent
               donor details, match by city, and contact available donors fast.
             </p>
@@ -275,6 +286,7 @@ function HeroSection({ onQuickSubmit, quickLead, setQuickLead }) {
 
           <QuickActionCard
             onSubmit={onQuickSubmit}
+            quickLeadError={quickLeadError}
             quickLead={quickLead}
             setQuickLead={setQuickLead}
           />
@@ -286,11 +298,11 @@ function HeroSection({ onQuickSubmit, quickLead, setQuickLead }) {
 
 function InfoTile({ icon: Icon, label, title }) {
   return (
-    <div className="flex min-h-20 items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+    <div className="flex min-h-20 items-center gap-3 rounded-xl border border-zinc-200/80 bg-white/90 p-4 shadow-sm shadow-zinc-950/5 backdrop-blur">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
         <Icon aria-hidden="true" className="h-5 w-5" />
       </div>
-      <div>
+      <div className="min-w-0">
         <p className="text-lg font-black leading-none">{title}</p>
         <p className="mt-1 text-sm font-semibold text-zinc-500">{label}</p>
       </div>
@@ -298,19 +310,19 @@ function InfoTile({ icon: Icon, label, title }) {
   );
 }
 
-function QuickActionCard({ onSubmit, quickLead, setQuickLead }) {
+function QuickActionCard({ onSubmit, quickLead, quickLeadError, setQuickLead }) {
   return (
     <aside className="relative pb-8 lg:pb-0">
       <div className="absolute -right-5 -top-5 hidden h-24 w-24 rounded-full border-[18px] border-white/25 lg:block" />
-      <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xl shadow-red-950/20 sm:p-6">
+      <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-2xl shadow-red-950/15 sm:p-6">
         <div className="mb-5 flex items-center justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-bold text-red-700">Quick action</p>
-            <h2 className="mt-1 text-2xl font-black text-zinc-950">
+            <h2 className="mt-1 text-2xl font-black leading-tight text-zinc-950">
               Arrange a donor
             </h2>
           </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-600 text-white">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg shadow-red-600/25 sm:h-12 sm:w-12">
             <Ambulance aria-hidden="true" className="h-6 w-6" />
           </div>
         </div>
@@ -321,13 +333,21 @@ function QuickActionCard({ onSubmit, quickLead, setQuickLead }) {
               className={iconFieldClass}
               inputMode="tel"
               name="mobile"
-              onChange={(event) =>
+              onBlur={(event) =>
+                setQuickLead((lead) => ({
+                  ...lead,
+                  phone: event.target.value.trim(),
+                }))
+              }
+              onChange={(event) => {
+                setQuickLeadError("");
                 setQuickLead((lead) => ({
                   ...lead,
                   phone: event.target.value,
-                }))
-              }
+                }));
+              }}
               placeholder="03XX XXXXXXX"
+              required
               type="tel"
               value={quickLead.phone}
             />
@@ -337,12 +357,14 @@ function QuickActionCard({ onSubmit, quickLead, setQuickLead }) {
             <select
               className={selectFieldClass}
               name="city"
-              onChange={(event) =>
+              onChange={(event) => {
+                setQuickLeadError("");
                 setQuickLead((lead) => ({
                   ...lead,
                   city: event.target.value,
-                }))
-              }
+                }));
+              }}
+              required
               value={quickLead.city}
             >
               <option disabled value="">
@@ -357,8 +379,14 @@ function QuickActionCard({ onSubmit, quickLead, setQuickLead }) {
             <SelectChevron />
           </FormField>
 
+          {quickLeadError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+              {quickLeadError}
+            </div>
+          )}
+
           <button
-            className="mt-2 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-base font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200 active:scale-[0.99]"
+            className="mt-2 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-3 text-center text-base font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200 active:scale-[0.99] sm:min-h-14 sm:rounded-xl"
             type="submit"
           >
             <HeartPulse aria-hidden="true" className="h-5 w-5" />
@@ -416,7 +444,7 @@ function RegistrationModal({
         type="button"
       />
 
-      <div className="relative max-h-[94vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl shadow-zinc-950/30 sm:max-w-2xl sm:rounded-2xl">
+      <div className="relative max-h-[92svh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl shadow-zinc-950/30 sm:max-h-[94vh] sm:max-w-2xl sm:rounded-2xl">
         <ModalHeader
           activeStep={activeStep}
           closeRegistration={closeRegistration}
@@ -446,7 +474,7 @@ function RegistrationModal({
 
             <div className="mt-6 flex flex-col-reverse gap-3 border-t border-zinc-200 pt-4 sm:flex-row sm:justify-between">
               <button
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-zinc-200 px-5 text-sm font-black text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex min-h-12 items-center justify-center rounded-lg border border-zinc-200 px-5 py-3 text-sm font-black text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 sm:rounded-xl"
                 disabled={step === 0 || isSubmitting}
                 onClick={() => setStep((currentStep) => currentStep - 1)}
                 type="button"
@@ -456,7 +484,7 @@ function RegistrationModal({
 
               {step < registrationSteps.length - 1 ? (
                 <button
-                  className="inline-flex h-12 items-center justify-center rounded-xl bg-red-600 px-6 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700"
+                  className="inline-flex min-h-12 items-center justify-center rounded-lg bg-red-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 sm:rounded-xl"
                   onClick={handleNextStep}
                   type="button"
                 >
@@ -464,7 +492,7 @@ function RegistrationModal({
                 </button>
               ) : (
                 <button
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-red-600 px-6 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-70"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-red-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-70 sm:rounded-xl"
                   disabled={isSubmitting}
                   type="submit"
                 >
@@ -489,7 +517,7 @@ function ModalHeader({ activeStep, closeRegistration, isSaved, step }) {
   return (
     <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-6">
       <div className="flex items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-bold text-red-700">
             Donor request registration
           </p>
@@ -589,7 +617,7 @@ function LocationStep({ errors, register }) {
           Exact Address/Hospital
         </span>
         <textarea
-          className="min-h-32 w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 text-base font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100"
+          className="min-h-32 w-full resize-none rounded-lg border border-zinc-200 bg-zinc-50/80 px-4 py-4 text-base font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 sm:rounded-xl"
           placeholder="Hospital, ward, area, or complete address"
           {...register("address")}
         />
@@ -610,7 +638,7 @@ function BloodGroupStep({ errors, register, selectedBloodGroup }) {
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {bloodGroups.map((group) => (
           <label
-            className={`flex h-14 cursor-pointer items-center justify-center rounded-xl border text-base font-black transition ${
+            className={`flex h-12 cursor-pointer items-center justify-center rounded-lg border text-base font-black transition sm:h-14 sm:rounded-xl ${
               selectedBloodGroup === group
                 ? "border-red-600 bg-red-600 text-white shadow-lg shadow-red-600/20"
                 : "border-zinc-200 bg-zinc-50 text-zinc-950 hover:border-red-200 hover:bg-red-50"
@@ -637,6 +665,11 @@ function BloodGroupStep({ errors, register, selectedBloodGroup }) {
 }
 
 function SuccessState({ router }) {
+  const goToDashboard = () => {
+    window.sessionStorage.setItem("lifelink-dashboard-access", "granted");
+    router.push("/dashboard");
+  };
+
   return (
     <div className="grid place-items-center px-4 py-12 text-center sm:px-8">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-600">
@@ -649,8 +682,8 @@ function SuccessState({ router }) {
         Your donor details have been saved. Redirecting you to donor search now.
       </p>
       <button
-        className="mt-7 inline-flex h-12 items-center justify-center rounded-xl bg-red-600 px-6 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700"
-        onClick={() => router.push("/dashboard")}
+        className="mt-7 inline-flex min-h-12 items-center justify-center rounded-lg bg-red-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 sm:rounded-xl"
+        onClick={goToDashboard}
         type="button"
       >
         Continue to Search
