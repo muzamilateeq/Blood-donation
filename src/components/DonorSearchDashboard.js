@@ -10,7 +10,6 @@ import {
   UserRound,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
 
 const cities = [
   "Karachi",
@@ -69,28 +68,21 @@ export default function DonorSearchDashboard() {
       return;
     }
 
-    if (!isSupabaseConfigured) {
-      setDonors([]);
-      setError(
-        "Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment."
-      );
-      return;
-    }
-
     setIsSearching(true);
 
-    const { data, error: queryError } = await supabase
-      .from("donors")
-      .select("id, full_name, email, phone_number, blood_group, city")
-      .eq("blood_group", bloodGroup)
-      .eq("city", city)
-      .order("full_name", { ascending: true });
+    const params = new URLSearchParams({
+      blood_group: bloodGroup,
+      city,
+    });
 
-    if (queryError) {
+    const response = await fetch(`/api/blood-donors?${params.toString()}`);
+    const result = await response.json();
+
+    if (!response.ok) {
       setDonors([]);
-      setError(queryError.message);
+      setError(result.error || "Unable to search donors.");
     } else {
-      setDonors(data || []);
+      setDonors(result.donors || []);
     }
 
     setIsSearching(false);
@@ -221,14 +213,12 @@ export default function DonorSearchDashboard() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {donors.map((donor) => {
-                const phoneNumber = normalizePhoneForWhatsApp(
-                  donor.phone_number
-                );
+                const phoneNumber = normalizePhoneForWhatsApp(donor.phone);
 
                 return (
                   <article
                     className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-red-950/10"
-                    key={donor.id || `${donor.email}-${donor.phone_number}`}
+                    key={donor.id || `${donor.email}-${donor.phone}`}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -236,7 +226,7 @@ export default function DonorSearchDashboard() {
                           Donor Name
                         </p>
                         <h3 className="mt-1 text-2xl font-black text-zinc-950">
-                          {donor.full_name}
+                          {donor.name}
                         </h3>
                       </div>
                       <span className="rounded-lg bg-red-600 px-3 py-2 text-lg font-black leading-none text-white">

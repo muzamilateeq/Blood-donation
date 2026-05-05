@@ -78,18 +78,32 @@ const steps = [
   },
 ];
 
-const inputClass =
-  "h-14 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-base font-semibold text-zinc-950 outline-none transition focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100";
-
 const iconInputClass =
   "h-14 w-full rounded-xl border border-zinc-200 bg-zinc-50 pl-12 pr-4 text-base font-semibold text-zinc-950 outline-none transition focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100";
 
 async function submitToDatabase(data) {
-  // Placeholder for Supabase:
-  // const { error } = await supabase.from("donor_requests").insert([data]);
-  // if (error) throw error;
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  return { id: crypto.randomUUID(), ...data };
+  const response = await fetch("/api/blood-donors", {
+    body: JSON.stringify({
+      name: data.fullName,
+      email: data.email,
+      phone: data.phone,
+      city: data.city,
+      address: data.address,
+      blood_group: data.bloodGroup,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || "Unable to save donor details.");
+  }
+
+  return result.donor;
 }
 
 export default function LandingPage() {
@@ -97,6 +111,7 @@ export default function LandingPage() {
   const [step, setStep] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
   const [quickLead, setQuickLead] = useState({ phone: "", city: "" });
+  const [submitError, setSubmitError] = useState("");
 
   const {
     control,
@@ -133,6 +148,7 @@ export default function LandingPage() {
 
   const openRegistration = () => {
     setIsSaved(false);
+    setSubmitError("");
     setStep(0);
     if (quickLead.phone) {
       setValue("phone", quickLead.phone, { shouldValidate: false });
@@ -154,6 +170,7 @@ export default function LandingPage() {
   };
 
   const handleNext = async () => {
+    setSubmitError("");
     const isStepValid = await trigger(steps[step].fields, {
       shouldFocus: true,
     });
@@ -163,11 +180,17 @@ export default function LandingPage() {
   };
 
   const onSubmit = async (data) => {
-    await submitToDatabase(data);
-    setIsSaved(true);
-    setStep(0);
-    reset();
-    setQuickLead({ phone: "", city: "" });
+    setSubmitError("");
+
+    try {
+      await submitToDatabase(data);
+      setIsSaved(true);
+      setStep(0);
+      reset();
+      setQuickLead({ phone: "", city: "" });
+    } catch (error) {
+      setSubmitError(error.message);
+    }
   };
 
   return (
@@ -413,8 +436,8 @@ export default function LandingPage() {
                   Saved successfully.
                 </h3>
                 <p className="mt-2 max-w-md text-base leading-7 text-zinc-600">
-                  Your donor request has been prepared for database storage.
-                  The Supabase insert call is currently placed as a placeholder.
+                  Your donor details have been saved to the blood donors
+                  database and are ready for dashboard search.
                 </p>
                 <button
                   className="mt-7 inline-flex h-12 items-center justify-center rounded-xl bg-red-600 px-6 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700"
@@ -544,6 +567,12 @@ export default function LandingPage() {
                         </p>
                       )}
                     </div>
+                  </div>
+                )}
+
+                {submitError && (
+                  <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+                    {submitError}
                   </div>
                 )}
 
