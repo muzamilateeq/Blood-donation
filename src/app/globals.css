@@ -63,7 +63,10 @@ svg {
 }
 
 .hero-bg-image {
-  background-position: 62% top;
+  background-color: #18181b;
+  background-position: 58% top;
+  background-repeat: no-repeat;
+  background-size: auto 62vh;
 }
 
 .dashboard-hero-bg {
@@ -73,6 +76,7 @@ svg {
 @media (min-width: 640px) {
   .hero-bg-image {
     background-position: center;
+    background-size: cover;
   }
 
   .dashboard-hero-bg {
