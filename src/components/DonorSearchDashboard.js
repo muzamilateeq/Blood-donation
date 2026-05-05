@@ -104,8 +104,8 @@ export default function DonorSearchDashboard() {
                 Donor Search Dashboard
               </h1>
               <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-red-50 sm:text-base">
-                Search verified donors by required blood group and city, then
-                contact them instantly through WhatsApp or email.
+                Select which blood group you need and which city you are in,
+                then contact matching donors instantly.
               </p>
             </div>
           </div>

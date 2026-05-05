@@ -18,6 +18,7 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -107,6 +108,7 @@ async function submitToDatabase(data) {
 }
 
 export default function LandingPage() {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
@@ -140,6 +142,16 @@ export default function LandingPage() {
       document.body.style.overflow = "";
     };
   }, [isModalOpen]);
+
+  useEffect(() => {
+    if (!isSaved) return;
+
+    const redirectTimer = window.setTimeout(() => {
+      router.push("/dashboard");
+    }, 900);
+
+    return () => window.clearTimeout(redirectTimer);
+  }, [isSaved, router]);
 
   const selectedBloodGroup = useWatch({
     control,
@@ -437,14 +449,14 @@ export default function LandingPage() {
                 </h3>
                 <p className="mt-2 max-w-md text-base leading-7 text-zinc-600">
                   Your donor details have been saved to the blood donors
-                  database and are ready for dashboard search.
+                  database. Redirecting you to donor search now.
                 </p>
                 <button
                   className="mt-7 inline-flex h-12 items-center justify-center rounded-xl bg-red-600 px-6 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700"
-                  onClick={closeRegistration}
+                  onClick={() => router.push("/dashboard")}
                   type="button"
                 >
-                  Done
+                  Continue to Search
                 </button>
               </div>
             ) : (
