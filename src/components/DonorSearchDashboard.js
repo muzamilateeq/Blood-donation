@@ -7,6 +7,7 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  Phone,
   Search,
   UserRound,
 } from "lucide-react";
@@ -101,7 +102,7 @@ export default function DonorSearchDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fff_0%,#fff7f7_46%,#fafafa_100%)] px-4 py-4 text-zinc-950 sm:px-6 sm:py-5 lg:px-8">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#fff_0%,#fff7f7_42%,#f8fafc_100%)] px-4 py-4 text-zinc-950 sm:px-6 sm:py-5 lg:px-8">
       <section className="mx-auto max-w-7xl">
         <DashboardHeader />
 
@@ -155,10 +156,10 @@ function DashboardHeader() {
       <div
         aria-hidden="true"
         className="dashboard-hero-bg absolute inset-0 -z-20 bg-cover"
-        style={{ backgroundImage: "url('/images/blood-donor-hero.png')" }}
+        style={{ backgroundImage: "url('/images/dashboard-donor-hero.png')" }}
       />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(135deg,rgba(9,9,11,0.86)_0%,rgba(127,29,29,0.68)_48%,rgba(220,38,38,0.48)_100%)]" />
-      <div className="absolute inset-0 -z-10 bg-red-600/15" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(105deg,rgba(9,9,11,0.88)_0%,rgba(24,24,27,0.68)_42%,rgba(127,29,29,0.34)_100%)]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_82%_18%,rgba(248,113,113,0.28),transparent_34%)]" />
 
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <BrandMark light />
@@ -192,7 +193,7 @@ function DashboardHeader() {
 
 function HeaderMetric({ label, value }) {
   return (
-    <div className="rounded-xl border border-white/18 bg-white/14 px-3 py-3 shadow-sm shadow-zinc-950/10 backdrop-blur-xl sm:px-4">
+    <div className="rounded-xl border border-white/18 bg-white/12 px-3 py-3 shadow-sm shadow-zinc-950/10 backdrop-blur-xl sm:px-4">
       <p className="text-xs font-bold uppercase text-red-100">{label}</p>
       <p className="mt-1 text-lg font-black leading-none text-white">{value}</p>
     </div>
@@ -233,11 +234,16 @@ function ResultsSection({ donors, error, hasSearched }) {
   const isEmpty = hasSearched && donors.length === 0 && !error;
 
   return (
-    <div className="mt-6">
+    <div className="mt-7">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-xl font-black text-zinc-950">Matching Donors</h2>
+        <div>
+          <p className="text-sm font-bold text-red-700">Search results</p>
+          <h2 className="text-2xl font-black leading-tight text-zinc-950">
+            Matching Donors
+          </h2>
+        </div>
         {hasSearched && !error && (
-          <p className="text-sm font-bold text-zinc-500">
+          <p className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm font-black text-zinc-600 shadow-sm">
             {donors.length} result{donors.length === 1 ? "" : "s"}
           </p>
         )}
@@ -274,27 +280,37 @@ function DonorCard({ donor }) {
   const phoneNumber = normalizePhoneForWhatsApp(donor.phone);
 
   return (
-    <article className="rounded-2xl border border-white/70 bg-white/90 p-4 shadow-sm shadow-zinc-950/5 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-red-950/10 sm:p-5">
+    <article className="group overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm shadow-zinc-950/5 transition hover:-translate-y-0.5 hover:border-red-100 hover:shadow-xl hover:shadow-red-950/10">
+      <div className="h-1.5 bg-[linear-gradient(90deg,#dc2626,#fb7185,#f8fafc)]" />
+      <div className="p-4 sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm font-bold text-red-700">Donor Name</p>
+          <p className="text-xs font-black uppercase text-red-700">
+            Verified match
+          </p>
           <h3 className="mt-1 truncate text-xl font-black text-zinc-950 sm:text-2xl">
             {donor.name}
           </h3>
         </div>
-        <span className="shrink-0 rounded-lg bg-red-600 px-3 py-2 text-lg font-black leading-none text-white">
+        <span className="shrink-0 rounded-xl bg-red-600 px-3 py-2 text-lg font-black leading-none text-white shadow-lg shadow-red-600/20">
           {donor.blood_group}
         </span>
       </div>
 
-      <div className="mt-5 flex items-center gap-2 text-sm font-bold text-zinc-600">
-        <MapPin aria-hidden="true" className="h-4 w-4 shrink-0" />
-        <span className="min-w-0 truncate">{donor.city}</span>
+      <div className="mt-5 grid gap-2 rounded-xl bg-zinc-50 p-3 text-sm font-bold text-zinc-600">
+        <div className="flex min-w-0 items-center gap-2">
+          <MapPin aria-hidden="true" className="h-4 w-4 shrink-0 text-red-600" />
+          <span className="min-w-0 truncate">{donor.city}</span>
+        </div>
+        <div className="flex min-w-0 items-center gap-2">
+          <Phone aria-hidden="true" className="h-4 w-4 shrink-0 text-red-600" />
+          <span className="min-w-0 truncate">{donor.phone}</span>
+        </div>
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <a
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-black text-white transition hover:bg-green-700 sm:rounded-xl"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-black text-white shadow-lg shadow-green-600/15 transition hover:bg-green-700 sm:rounded-xl"
           href={`https://wa.me/${phoneNumber}`}
           rel="noreferrer"
           target="_blank"
@@ -303,12 +319,13 @@ function DonorCard({ donor }) {
           WhatsApp
         </a>
         <a
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-center text-sm font-black text-zinc-700 transition hover:bg-zinc-50 sm:rounded-xl"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-center text-sm font-black text-zinc-700 transition hover:border-red-100 hover:bg-red-50 hover:text-red-700 sm:rounded-xl"
           href={`mailto:${donor.email}`}
         >
           <Mail aria-hidden="true" className="h-4 w-4" />
           Send Email
         </a>
+      </div>
       </div>
     </article>
   );
