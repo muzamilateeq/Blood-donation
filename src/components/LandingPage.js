@@ -95,8 +95,6 @@ export default function LandingPage() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [quickLeadError, setQuickLeadError] = useState("");
-  const [quickLead, setQuickLead] = useState({ city: "", phone: "" });
   const [step, setStep] = useState(0);
   const [submitError, setSubmitError] = useState("");
 
@@ -119,7 +117,6 @@ export default function LandingPage() {
     handleSubmit,
     register,
     reset,
-    setValue,
     trigger,
   } = form;
 
@@ -149,15 +146,6 @@ export default function LandingPage() {
     setIsSaved(false);
     setSubmitError("");
     setStep(0);
-
-    if (quickLead.phone) {
-      setValue("phone", quickLead.phone, { shouldValidate: false });
-    }
-
-    if (quickLead.city) {
-      setValue("city", quickLead.city, { shouldValidate: false });
-    }
-
     setIsModalOpen(true);
   };
 
@@ -165,25 +153,6 @@ export default function LandingPage() {
     if (!isSubmitting) {
       setIsModalOpen(false);
     }
-  };
-
-  const handleQuickSubmit = (event) => {
-    event.preventDefault();
-
-    const phonePattern = /^(\+92|0)?3\d{2}[ -]?\d{7}$/;
-
-    if (!quickLead.phone.trim() || !quickLead.city) {
-      setQuickLeadError("Please enter your mobile number and select your city.");
-      return;
-    }
-
-    if (!phonePattern.test(quickLead.phone.trim())) {
-      setQuickLeadError("Enter a valid Pakistani mobile number.");
-      return;
-    }
-
-    setQuickLeadError("");
-    openRegistration();
   };
 
   const handleNextStep = async () => {
@@ -209,7 +178,6 @@ export default function LandingPage() {
       setIsSaved(true);
       setStep(0);
       reset();
-      setQuickLead({ city: "", phone: "" });
     } catch (error) {
       setSubmitError(error.message);
     }
@@ -217,13 +185,7 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen bg-white text-zinc-950">
-      <HeroSection
-        onQuickSubmit={handleQuickSubmit}
-        quickLeadError={quickLeadError}
-        quickLead={quickLead}
-        setQuickLeadError={setQuickLeadError}
-        setQuickLead={setQuickLead}
-      />
+      <HeroSection onOpenRegistration={openRegistration} />
 
       {isModalOpen && (
         <RegistrationModal
@@ -246,13 +208,7 @@ export default function LandingPage() {
   );
 }
 
-function HeroSection({
-  onQuickSubmit,
-  quickLead,
-  quickLeadError,
-  setQuickLead,
-  setQuickLeadError,
-}) {
+function HeroSection({ onOpenRegistration }) {
   return (
     <section className="relative isolate overflow-hidden bg-zinc-950">
       <div
@@ -295,13 +251,7 @@ function HeroSection({
             </div>
           </div>
 
-          <QuickActionCard
-            onSubmit={onQuickSubmit}
-            quickLeadError={quickLeadError}
-            quickLead={quickLead}
-            setQuickLeadError={setQuickLeadError}
-            setQuickLead={setQuickLead}
-          />
+          <QuickActionCard onOpenRegistration={onOpenRegistration} />
         </div>
       </div>
     </section>
@@ -322,13 +272,7 @@ function InfoTile({ icon: Icon, label, title }) {
   );
 }
 
-function QuickActionCard({
-  onSubmit,
-  quickLead,
-  quickLeadError,
-  setQuickLead,
-  setQuickLeadError,
-}) {
+function QuickActionCard({ onOpenRegistration }) {
   return (
     <aside className="relative pb-8 lg:pb-0">
       <div className="absolute -right-5 -top-5 hidden h-24 w-24 rounded-full border-[18px] border-white/20 lg:block" />
@@ -337,7 +281,7 @@ function QuickActionCard({
           <div className="min-w-0">
             <p className="text-sm font-bold text-red-700">Quick action</p>
             <h2 className="mt-1 text-2xl font-black leading-tight text-zinc-950">
-              Arrange a donor
+              Start with your details
             </h2>
           </div>
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg shadow-red-600/25 sm:h-12 sm:w-12">
@@ -345,72 +289,32 @@ function QuickActionCard({
           </div>
         </div>
 
-        <form className="grid gap-4" onSubmit={onSubmit}>
-          <FormField icon={Phone} label="Mobile Number">
-            <input
-              className={iconFieldClass}
-              inputMode="tel"
-              name="mobile"
-              onBlur={(event) =>
-                setQuickLead((lead) => ({
-                  ...lead,
-                  phone: event.target.value.trim(),
-                }))
-              }
-              onChange={(event) => {
-                setQuickLeadError("");
-                setQuickLead((lead) => ({
-                  ...lead,
-                  phone: event.target.value,
-                }));
-              }}
-              placeholder="03XX XXXXXXX"
-              required
-              type="tel"
-              value={quickLead.phone}
-            />
-          </FormField>
+        <div className="grid gap-4">
+          <p className="text-base font-semibold leading-7 text-zinc-600">
+            Put your contact, city, hospital address, and blood group first.
+            After that you can search matching donors and contact them quickly.
+          </p>
 
-          <FormField icon={MapPin} label="Select City">
-            <select
-              className={selectFieldClass}
-              name="city"
-              onChange={(event) => {
-                setQuickLeadError("");
-                setQuickLead((lead) => ({
-                  ...lead,
-                  city: event.target.value,
-                }));
-              }}
-              required
-              value={quickLead.city}
-            >
-              <option disabled value="">
-                Select City
-              </option>
-              {cities.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
-            <SelectChevron />
-          </FormField>
-
-          {quickLeadError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
-              {quickLeadError}
+          <div className="grid gap-3 rounded-xl border border-red-100 bg-red-50/80 p-4">
+            <div className="flex items-center gap-3 text-sm font-black text-zinc-800">
+              <CheckCircle2 aria-hidden="true" className="h-5 w-5 text-red-600" />
+              Add donor request details
             </div>
-          )}
+            <div className="flex items-center gap-3 text-sm font-black text-zinc-800">
+              <CheckCircle2 aria-hidden="true" className="h-5 w-5 text-red-600" />
+              Search by city and blood group
+            </div>
+          </div>
 
           <button
-            className="mt-2 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-3 text-center text-base font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200 active:scale-[0.99] sm:min-h-14 sm:rounded-xl"
-            type="submit"
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-3 text-center text-base font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200 active:scale-[0.99] sm:min-h-14 sm:rounded-xl"
+            onClick={onOpenRegistration}
+            type="button"
           >
             <HeartPulse aria-hidden="true" className="h-5 w-5" />
-            Arrange Blood Donor
+            Add Details & Search Donors
           </button>
-        </form>
+        </div>
 
         <div className="mt-5 grid grid-cols-2 gap-3">
           <MetricCard icon={UsersRound} label="donor records" value="Live" />
