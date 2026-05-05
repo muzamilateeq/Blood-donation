@@ -257,10 +257,10 @@ function HeroSection({
     <section className="relative isolate overflow-hidden bg-zinc-950">
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-20 bg-cover bg-center"
+        className="hero-bg-image absolute inset-0 -z-20 bg-cover"
         style={{ backgroundImage: "url('/images/blood-donor-hero.png')" }}
       />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(9,9,11,0.82)_0%,rgba(9,9,11,0.58)_44%,rgba(220,38,38,0.38)_100%)]" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(9,9,11,0.42)_0%,rgba(9,9,11,0.72)_48%,rgba(220,38,38,0.32)_100%)] sm:bg-[linear-gradient(90deg,rgba(9,9,11,0.82)_0%,rgba(9,9,11,0.58)_44%,rgba(220,38,38,0.38)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.96)_100%)]" />
       <div className="absolute inset-x-0 top-0 h-1.5 bg-red-600" />
 
@@ -269,23 +269,23 @@ function HeroSection({
           <BrandMark light />
         </header>
 
-        <div className="grid flex-1 items-center gap-7 py-6 sm:py-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:gap-10 lg:py-10">
+        <div className="grid flex-1 items-end gap-6 pb-7 pt-14 sm:items-center sm:gap-7 sm:py-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:gap-10 lg:py-10">
           <div className="max-w-3xl">
             <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-2 text-xs font-bold text-white shadow-sm shadow-zinc-950/10 backdrop-blur sm:mb-6 sm:px-4 sm:text-sm">
               <Activity aria-hidden="true" className="h-4 w-4" />
               <span className="truncate">Live donor requests across Pakistan</span>
             </div>
 
-            <h1 className="max-w-4xl text-4xl font-black leading-[1.02] text-white sm:text-6xl sm:leading-[0.98] lg:text-7xl">
+            <h1 className="max-w-4xl text-4xl font-black leading-[1.02] text-white drop-shadow-sm sm:text-6xl sm:leading-[0.98] lg:text-7xl">
               Find Blood Donors Anywhere in Pakistan.
             </h1>
 
-            <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-100 sm:text-lg sm:leading-8 lg:text-xl">
+            <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-100 drop-shadow-sm sm:mt-5 sm:text-lg sm:leading-8 lg:text-xl">
               LifeLink Pakistan helps families and hospitals collect urgent
               donor details, match by city, and contact available donors fast.
             </p>
 
-            <div className="mt-7 grid gap-3 sm:grid-cols-3">
+            <div className="mt-6 grid gap-3 sm:mt-7 sm:grid-cols-3">
               <InfoTile icon={Clock3} label="Emergency intake" title="24/7" />
               <InfoTile icon={MapPin} label="Local matching" title="City" />
               <InfoTile
@@ -333,7 +333,7 @@ function QuickActionCard({
   return (
     <aside className="relative pb-8 lg:pb-0">
       <div className="absolute -right-5 -top-5 hidden h-24 w-24 rounded-full border-[18px] border-white/20 lg:block" />
-      <div className="rounded-2xl border border-white/30 bg-white/78 p-4 shadow-2xl shadow-zinc-950/25 backdrop-blur-2xl sm:p-6">
+      <div className="rounded-2xl border border-white/50 bg-white/90 p-4 shadow-2xl shadow-zinc-950/25 backdrop-blur-2xl sm:border-white/30 sm:bg-white/78 sm:p-6">
         <div className="mb-5 flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-sm font-bold text-red-700">Quick action</p>
