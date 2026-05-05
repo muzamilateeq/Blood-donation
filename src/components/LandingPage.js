@@ -8,17 +8,15 @@ import {
   ChevronDown,
   Clock3,
   HeartPulse,
-  Loader2,
   Mail,
   MapPin,
   Phone,
   ShieldCheck,
   UserRound,
   UsersRound,
-  X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import BrandMark from "@/components/BrandMark";
@@ -41,24 +39,6 @@ const donorSchema = z.object({
     .min(8, "Add the exact address or hospital name."),
   bloodGroup: z.enum(bloodGroups, { message: "Select a blood group." }),
 });
-
-const registrationSteps = [
-  {
-    description: "Basic information for coordination.",
-    fields: ["fullName", "email", "phone"],
-    title: "Contact details",
-  },
-  {
-    description: "Help us route the request to the right city.",
-    fields: ["city", "address"],
-    title: "Location",
-  },
-  {
-    description: "Confirm the required blood type.",
-    fields: ["bloodGroup"],
-    title: "Blood group",
-  },
-];
 
 const fieldBaseClass =
   "h-12 w-full rounded-lg border border-zinc-200 bg-zinc-50/80 text-base font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 sm:h-14 sm:rounded-xl";
@@ -93,9 +73,6 @@ async function saveDonorDetails(data) {
 
 export default function LandingPage() {
   const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-  const [step, setStep] = useState(0);
   const [submitError, setSubmitError] = useState("");
 
   const form = useForm({
@@ -117,7 +94,6 @@ export default function LandingPage() {
     handleSubmit,
     register,
     reset,
-    trigger,
   } = form;
 
   const selectedBloodGroup = useWatch({
@@ -125,59 +101,14 @@ export default function LandingPage() {
     name: "bloodGroup",
   });
 
-  useEffect(() => {
-    document.body.style.overflow = isModalOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isModalOpen]);
-
-  useEffect(() => {
-    if (!isSaved) return;
-
-    const redirectTimer = window.setTimeout(() => {
-      router.push("/dashboard");
-    }, 900);
-
-    return () => window.clearTimeout(redirectTimer);
-  }, [isSaved, router]);
-
-  const openRegistration = () => {
-    setIsSaved(false);
-    setSubmitError("");
-    setStep(0);
-    setIsModalOpen(true);
-  };
-
-  const closeRegistration = () => {
-    if (!isSubmitting) {
-      setIsModalOpen(false);
-    }
-  };
-
-  const handleNextStep = async () => {
-    setSubmitError("");
-
-    const isStepValid = await trigger(registrationSteps[step].fields, {
-      shouldFocus: true,
-    });
-
-    if (isStepValid) {
-      setStep((currentStep) =>
-        Math.min(currentStep + 1, registrationSteps.length - 1)
-      );
-    }
-  };
-
   const handleRegistrationSubmit = async (data) => {
     setSubmitError("");
 
     try {
       await saveDonorDetails(data);
       window.sessionStorage.setItem("lifelink-dashboard-access", "granted");
-      setIsSaved(true);
-      setStep(0);
       reset();
+      router.push("/dashboard");
     } catch (error) {
       setSubmitError(error.message);
     }
@@ -185,30 +116,28 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen bg-white text-zinc-950">
-      <HeroSection onOpenRegistration={openRegistration} />
-
-      {isModalOpen && (
-        <RegistrationModal
-          closeRegistration={closeRegistration}
-          errors={errors}
-          handleNextStep={handleNextStep}
-          handleSubmit={handleSubmit}
-          isSaved={isSaved}
-          isSubmitting={isSubmitting}
-          onSubmit={handleRegistrationSubmit}
-          register={register}
-          router={router}
-          selectedBloodGroup={selectedBloodGroup}
-          step={step}
-          submitError={submitError}
-          setStep={setStep}
-        />
-      )}
+      <HeroSection
+        errors={errors}
+        handleSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+        onSubmit={handleRegistrationSubmit}
+        register={register}
+        selectedBloodGroup={selectedBloodGroup}
+        submitError={submitError}
+      />
     </main>
   );
 }
 
-function HeroSection({ onOpenRegistration }) {
+function HeroSection({
+  errors,
+  handleSubmit,
+  isSubmitting,
+  onSubmit,
+  register,
+  selectedBloodGroup,
+  submitError,
+}) {
   return (
     <section className="relative isolate overflow-hidden bg-zinc-950">
       <div
@@ -251,7 +180,15 @@ function HeroSection({ onOpenRegistration }) {
             </div>
           </div>
 
-          <QuickActionCard onOpenRegistration={onOpenRegistration} />
+          <QuickActionCard
+            errors={errors}
+            handleSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            onSubmit={onSubmit}
+            register={register}
+            selectedBloodGroup={selectedBloodGroup}
+            submitError={submitError}
+          />
         </div>
       </div>
     </section>
@@ -272,16 +209,24 @@ function InfoTile({ icon: Icon, label, title }) {
   );
 }
 
-function QuickActionCard({ onOpenRegistration }) {
+function QuickActionCard({
+  errors,
+  handleSubmit,
+  isSubmitting,
+  onSubmit,
+  register,
+  selectedBloodGroup,
+  submitError,
+}) {
   return (
     <aside className="relative pb-8 lg:pb-0">
       <div className="absolute -right-5 -top-5 hidden h-24 w-24 rounded-full border-[18px] border-white/20 lg:block" />
       <div className="rounded-2xl border border-white/50 bg-white/90 p-4 shadow-2xl shadow-zinc-950/25 backdrop-blur-2xl sm:border-white/30 sm:bg-white/78 sm:p-6">
-        <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="mb-4 flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-sm font-bold text-red-700">Quick action</p>
-            <h2 className="mt-1 text-2xl font-black leading-tight text-zinc-950">
-              Start with your details
+            <h2 className="mt-1 text-2xl font-black leading-tight text-zinc-950 sm:text-3xl">
+              Arrange a donor now
             </h2>
           </div>
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg shadow-red-600/25 sm:h-12 sm:w-12">
@@ -289,34 +234,117 @@ function QuickActionCard({ onOpenRegistration }) {
           </div>
         </div>
 
-        <div className="grid gap-4">
-          <p className="text-base font-semibold leading-7 text-zinc-600">
-            Put your contact, city, hospital address, and blood group first.
-            After that you can search matching donors and contact them quickly.
-          </p>
+        <form className="grid gap-3" onSubmit={handleSubmit(onSubmit)}>
+          <FormField error={errors.fullName?.message} icon={UserRound} label="Full Name">
+            <input
+              className={iconFieldClass}
+              placeholder="Enter full name"
+              type="text"
+              {...register("fullName")}
+            />
+          </FormField>
 
-          <div className="grid gap-3 rounded-xl border border-red-100 bg-red-50/80 p-4">
-            <div className="flex items-center gap-3 text-sm font-black text-zinc-800">
-              <CheckCircle2 aria-hidden="true" className="h-5 w-5 text-red-600" />
-              Add donor request details
-            </div>
-            <div className="flex items-center gap-3 text-sm font-black text-zinc-800">
-              <CheckCircle2 aria-hidden="true" className="h-5 w-5 text-red-600" />
-              Search by city and blood group
-            </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FormField error={errors.phone?.message} icon={Phone} label="Mobile Number">
+              <input
+                className={iconFieldClass}
+                inputMode="tel"
+                placeholder="03XX XXXXXXX"
+                type="tel"
+                {...register("phone")}
+              />
+            </FormField>
+
+            <FormField error={errors.city?.message} icon={MapPin} label="City">
+              <select className={selectFieldClass} {...register("city")}>
+                <option value="">Select City</option>
+                {cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+              <SelectChevron />
+            </FormField>
           </div>
 
-          <button
-            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-3 text-center text-base font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200 active:scale-[0.99] sm:min-h-14 sm:rounded-xl"
-            onClick={onOpenRegistration}
-            type="button"
-          >
-            <HeartPulse aria-hidden="true" className="h-5 w-5" />
-            Add Details & Search Donors
-          </button>
-        </div>
+          <FormField error={errors.email?.message} icon={Mail} label="Email Address">
+            <input
+              className={iconFieldClass}
+              placeholder="name@example.com"
+              type="email"
+              {...register("email")}
+            />
+          </FormField>
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
+          <label className="grid gap-2">
+            <span className="text-sm font-bold text-zinc-700">
+              Address / Hospital
+            </span>
+            <textarea
+              className="min-h-24 w-full resize-none rounded-lg border border-zinc-200 bg-zinc-50/80 px-4 py-3 text-base font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 sm:rounded-xl"
+              placeholder="Hospital, ward, area, or complete address"
+              {...register("address")}
+            />
+            {errors.address?.message && (
+              <p className="text-sm font-semibold text-red-600">
+                {errors.address.message}
+              </p>
+            )}
+          </label>
+
+          <div>
+            <p className="text-sm font-bold text-zinc-700">Blood Group</p>
+            <div className="mt-2 grid grid-cols-4 gap-2">
+              {bloodGroups.map((group) => (
+                <label
+                  className={`flex h-11 cursor-pointer items-center justify-center rounded-lg border text-sm font-black transition ${
+                    selectedBloodGroup === group
+                      ? "border-red-600 bg-red-600 text-white shadow-lg shadow-red-600/20"
+                      : "border-zinc-200 bg-zinc-50 text-zinc-950 hover:border-red-200 hover:bg-red-50"
+                  }`}
+                  key={group}
+                >
+                  <input
+                    className="sr-only"
+                    type="radio"
+                    value={group}
+                    {...register("bloodGroup")}
+                  />
+                  {group}
+                </label>
+              ))}
+            </div>
+            {errors.bloodGroup?.message && (
+              <p className="mt-2 text-sm font-semibold text-red-600">
+                {errors.bloodGroup.message}
+              </p>
+            )}
+          </div>
+
+          {submitError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+              {submitError}
+            </div>
+          )}
+
+          <button
+            className="mt-1 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-3 text-center text-base font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200 active:scale-[0.99] disabled:cursor-wait disabled:opacity-70 sm:min-h-14 sm:rounded-xl"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? (
+              "Saving..."
+            ) : (
+              <>
+                <HeartPulse aria-hidden="true" className="h-5 w-5" />
+                Save Details & Search Donors
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
           <MetricCard icon={UsersRound} label="donor records" value="Live" />
           <MetricCard icon={Clock3} label="routing target" value="<10m" />
         </div>
@@ -324,292 +352,12 @@ function QuickActionCard({ onOpenRegistration }) {
     </aside>
   );
 }
-
 function MetricCard({ icon: Icon, label, value }) {
   return (
     <div className="rounded-xl bg-zinc-50 p-4">
       <Icon aria-hidden="true" className="mb-3 h-5 w-5 text-red-600" />
       <p className="text-2xl font-black leading-none">{value}</p>
       <p className="mt-1 text-sm font-semibold text-zinc-500">{label}</p>
-    </div>
-  );
-}
-
-function RegistrationModal({
-  closeRegistration,
-  errors,
-  handleNextStep,
-  handleSubmit,
-  isSaved,
-  isSubmitting,
-  onSubmit,
-  register,
-  router,
-  selectedBloodGroup,
-  setStep,
-  step,
-  submitError,
-}) {
-  const activeStep = registrationSteps[step];
-
-  return (
-    <div
-      aria-labelledby="registration-modal-title"
-      aria-modal="true"
-      className="fixed inset-0 z-50 grid place-items-end bg-zinc-950/65 p-0 backdrop-blur-sm sm:place-items-center sm:p-4"
-      role="dialog"
-    >
-      <button
-        aria-label="Close registration modal"
-        className="absolute inset-0 h-full w-full cursor-default"
-        onClick={closeRegistration}
-        type="button"
-      />
-
-      <div className="relative max-h-[92svh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-2xl shadow-zinc-950/30 sm:max-h-[94vh] sm:max-w-2xl sm:rounded-2xl">
-        <ModalHeader
-          activeStep={activeStep}
-          closeRegistration={closeRegistration}
-          isSaved={isSaved}
-          step={step}
-        />
-
-        {isSaved ? (
-          <SuccessState router={router} />
-        ) : (
-          <form className="px-4 py-5 sm:px-6" onSubmit={handleSubmit(onSubmit)}>
-            {step === 0 && <ContactStep errors={errors} register={register} />}
-            {step === 1 && <LocationStep errors={errors} register={register} />}
-            {step === 2 && (
-              <BloodGroupStep
-                errors={errors}
-                register={register}
-                selectedBloodGroup={selectedBloodGroup}
-              />
-            )}
-
-            {submitError && (
-              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
-                {submitError}
-              </div>
-            )}
-
-            <div className="mt-6 flex flex-col-reverse gap-3 border-t border-zinc-200 pt-4 sm:flex-row sm:justify-between">
-              <button
-                className="inline-flex min-h-12 items-center justify-center rounded-lg border border-zinc-200 px-5 py-3 text-sm font-black text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 sm:rounded-xl"
-                disabled={step === 0 || isSubmitting}
-                onClick={() => setStep((currentStep) => currentStep - 1)}
-                type="button"
-              >
-                Back
-              </button>
-
-              {step < registrationSteps.length - 1 ? (
-                <button
-                  className="inline-flex min-h-12 items-center justify-center rounded-lg bg-red-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 sm:rounded-xl"
-                  onClick={handleNextStep}
-                  type="button"
-                >
-                  Continue
-                </button>
-              ) : (
-                <button
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-red-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-70 sm:rounded-xl"
-                  disabled={isSubmitting}
-                  type="submit"
-                >
-                  {isSubmitting && (
-                    <Loader2
-                      aria-hidden="true"
-                      className="h-4 w-4 animate-spin"
-                    />
-                  )}
-                  Submit to Database
-                </button>
-              )}
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ModalHeader({ activeStep, closeRegistration, isSaved, step }) {
-  return (
-    <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-red-700">
-            Donor request registration
-          </p>
-          <h2
-            className="mt-1 text-2xl font-black text-zinc-950"
-            id="registration-modal-title"
-          >
-            {isSaved ? "Request saved" : activeStep.title}
-          </h2>
-          {!isSaved && (
-            <p className="mt-1 text-sm font-semibold text-zinc-500">
-              {activeStep.description}
-            </p>
-          )}
-        </div>
-        <button
-          aria-label="Close modal"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200 text-zinc-600 transition hover:bg-zinc-50"
-          onClick={closeRegistration}
-          type="button"
-        >
-          <X aria-hidden="true" className="h-5 w-5" />
-        </button>
-      </div>
-
-      {!isSaved && (
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {registrationSteps.map((item, index) => (
-            <div
-              className={`h-2 rounded-full ${
-                index <= step ? "bg-red-600" : "bg-zinc-200"
-              }`}
-              key={item.title}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ContactStep({ errors, register }) {
-  return (
-    <div className="grid gap-4">
-      <FormField error={errors.fullName?.message} icon={UserRound} label="Full Name">
-        <input
-          className={iconFieldClass}
-          placeholder="Enter full name"
-          type="text"
-          {...register("fullName")}
-        />
-      </FormField>
-
-      <FormField error={errors.email?.message} icon={Mail} label="Email Address">
-        <input
-          className={iconFieldClass}
-          placeholder="name@example.com"
-          type="email"
-          {...register("email")}
-        />
-      </FormField>
-
-      <FormField
-        error={errors.phone?.message}
-        icon={Phone}
-        label="Phone Number (WhatsApp preferred)"
-      >
-        <input
-          className={iconFieldClass}
-          inputMode="tel"
-          placeholder="03XX XXXXXXX"
-          type="tel"
-          {...register("phone")}
-        />
-      </FormField>
-    </div>
-  );
-}
-
-function LocationStep({ errors, register }) {
-  return (
-    <div className="grid gap-4">
-      <FormField error={errors.city?.message} icon={MapPin} label="City">
-        <select className={selectFieldClass} {...register("city")}>
-          <option value="">Select City</option>
-          {cities.map((city) => (
-            <option key={city} value={city}>
-              {city}
-            </option>
-          ))}
-        </select>
-        <SelectChevron />
-      </FormField>
-
-      <label className="grid gap-2">
-        <span className="text-sm font-bold text-zinc-700">
-          Exact Address/Hospital
-        </span>
-        <textarea
-          className="min-h-32 w-full resize-none rounded-lg border border-zinc-200 bg-zinc-50/80 px-4 py-4 text-base font-semibold text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 sm:rounded-xl"
-          placeholder="Hospital, ward, area, or complete address"
-          {...register("address")}
-        />
-        {errors.address?.message && (
-          <p className="text-sm font-semibold text-red-600">
-            {errors.address.message}
-          </p>
-        )}
-      </label>
-    </div>
-  );
-}
-
-function BloodGroupStep({ errors, register, selectedBloodGroup }) {
-  return (
-    <div>
-      <p className="text-sm font-bold text-zinc-700">Blood Group</p>
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {bloodGroups.map((group) => (
-          <label
-            className={`flex h-12 cursor-pointer items-center justify-center rounded-lg border text-base font-black transition sm:h-14 sm:rounded-xl ${
-              selectedBloodGroup === group
-                ? "border-red-600 bg-red-600 text-white shadow-lg shadow-red-600/20"
-                : "border-zinc-200 bg-zinc-50 text-zinc-950 hover:border-red-200 hover:bg-red-50"
-            }`}
-            key={group}
-          >
-            <input
-              className="sr-only"
-              type="radio"
-              value={group}
-              {...register("bloodGroup")}
-            />
-            {group}
-          </label>
-        ))}
-      </div>
-      {errors.bloodGroup?.message && (
-        <p className="mt-2 text-sm font-semibold text-red-600">
-          {errors.bloodGroup.message}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function SuccessState({ router }) {
-  const goToDashboard = () => {
-    window.sessionStorage.setItem("lifelink-dashboard-access", "granted");
-    router.push("/dashboard");
-  };
-
-  return (
-    <div className="grid place-items-center px-4 py-12 text-center sm:px-8">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-600">
-        <CheckCircle2 aria-hidden="true" className="h-9 w-9" />
-      </div>
-      <h3 className="mt-5 text-2xl font-black text-zinc-950">
-        Saved successfully.
-      </h3>
-      <p className="mt-2 max-w-md text-base leading-7 text-zinc-600">
-        Your donor details have been saved. Redirecting you to donor search now.
-      </p>
-      <button
-        className="mt-7 inline-flex min-h-12 items-center justify-center rounded-lg bg-red-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700 sm:rounded-xl"
-        onClick={goToDashboard}
-        type="button"
-      >
-        Continue to Search
-      </button>
     </div>
   );
 }
