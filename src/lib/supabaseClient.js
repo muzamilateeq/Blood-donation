@@ -8,7 +8,7 @@ function normalizeSupabaseUrl(url) {
     return "";
   }
 
-  const trimmedUrl = url.trim();
+  const trimmedUrl = url.trim().replace(/\/rest\/v1\/?$/i, "");
 
   if (/^[a-z0-9-]+$/i.test(trimmedUrl)) {
     return `https://${trimmedUrl}.supabase.co`;
