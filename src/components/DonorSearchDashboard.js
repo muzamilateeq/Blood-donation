@@ -101,12 +101,12 @@ export default function DonorSearchDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fff_0%,#fafafa_42%,#fff5f5_100%)] px-4 py-4 text-zinc-950 sm:px-6 sm:py-5 lg:px-8">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#fff_0%,#fff7f7_46%,#fafafa_100%)] px-4 py-4 text-zinc-950 sm:px-6 sm:py-5 lg:px-8">
       <section className="mx-auto max-w-7xl">
         <DashboardHeader />
 
         <form
-          className="grid gap-4 rounded-2xl border border-zinc-200/80 bg-white/95 p-4 shadow-sm shadow-zinc-950/5 backdrop-blur sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end"
+          className="-mt-8 relative z-10 grid gap-4 rounded-2xl border border-white/60 bg-white/88 p-4 shadow-2xl shadow-red-950/10 backdrop-blur-2xl sm:p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end"
           onSubmit={searchDonors}
         >
           <SearchSelect
@@ -151,8 +151,16 @@ export default function DonorSearchDashboard() {
 
 function DashboardHeader() {
   return (
-    <div className="mb-5 rounded-2xl bg-red-600 p-4 text-white shadow-xl shadow-red-950/15 sm:mb-6 sm:p-6">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+    <div className="relative isolate mb-12 overflow-hidden rounded-2xl p-4 text-white shadow-2xl shadow-red-950/18 sm:p-6">
+      <div
+        aria-hidden="true"
+        className="dashboard-hero-bg absolute inset-0 -z-20 bg-cover"
+        style={{ backgroundImage: "url('/images/blood-donor-hero.png')" }}
+      />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(135deg,rgba(9,9,11,0.86)_0%,rgba(127,29,29,0.68)_48%,rgba(220,38,38,0.48)_100%)]" />
+      <div className="absolute inset-0 -z-10 bg-red-600/15" />
+
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <BrandMark light />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <HeaderMetric label="Search by" value="City" />
@@ -161,17 +169,17 @@ function DashboardHeader() {
         </div>
       </div>
 
-      <div className="mt-6 max-w-3xl">
+      <div className="mt-12 max-w-3xl pb-14 sm:mt-14 sm:pb-16">
         <p className="text-sm font-bold text-red-100">After registration</p>
-        <h1 className="mt-1 text-3xl font-black leading-tight sm:text-4xl">
+        <h1 className="mt-1 text-3xl font-black leading-tight drop-shadow-sm sm:text-5xl">
           Donor Search Dashboard
         </h1>
-        <p className="mt-3 text-sm font-semibold leading-6 text-red-50 sm:text-base">
+        <p className="mt-3 max-w-2xl text-sm font-semibold leading-6 text-red-50 drop-shadow-sm sm:text-base">
           Select which blood group you need and which city you are in. Matching
           donors appear below with WhatsApp and email contact actions.
         </p>
         <Link
-          className="mt-5 inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-red-700 shadow-sm shadow-red-950/10 transition hover:bg-red-50"
+          className="mt-5 inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-white/25 bg-white/18 px-4 py-2 text-sm font-black text-white shadow-sm shadow-zinc-950/10 backdrop-blur transition hover:bg-white/25"
           href="/"
         >
           <ArrowLeft aria-hidden="true" className="h-4 w-4" />
@@ -184,7 +192,7 @@ function DashboardHeader() {
 
 function HeaderMetric({ label, value }) {
   return (
-    <div className="rounded-xl bg-white/10 px-3 py-3 sm:px-4">
+    <div className="rounded-xl border border-white/18 bg-white/14 px-3 py-3 shadow-sm shadow-zinc-950/10 backdrop-blur-xl sm:px-4">
       <p className="text-xs font-bold uppercase text-red-100">{label}</p>
       <p className="mt-1 text-lg font-black leading-none text-white">{value}</p>
     </div>
@@ -250,7 +258,7 @@ function ResultsSection({ donors, error, hasSearched }) {
 
 function EmptyState() {
   return (
-    <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-8 text-center shadow-sm shadow-zinc-950/5">
+    <div className="rounded-2xl border border-white/60 bg-white/88 p-8 text-center shadow-sm shadow-zinc-950/5 backdrop-blur">
       <UserRound aria-hidden="true" className="mx-auto h-10 w-10 text-zinc-400" />
       <p className="mt-3 text-lg font-black text-zinc-950">
         No matching donors found.
@@ -266,7 +274,7 @@ function DonorCard({ donor }) {
   const phoneNumber = normalizePhoneForWhatsApp(donor.phone);
 
   return (
-    <article className="rounded-2xl border border-zinc-200/80 bg-white/95 p-4 shadow-sm shadow-zinc-950/5 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-red-950/10 sm:p-5">
+    <article className="rounded-2xl border border-white/70 bg-white/90 p-4 shadow-sm shadow-zinc-950/5 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-red-950/10 sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm font-bold text-red-700">Donor Name</p>

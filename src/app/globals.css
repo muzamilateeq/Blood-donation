@@ -66,8 +66,16 @@ svg {
   background-position: 62% top;
 }
 
+.dashboard-hero-bg {
+  background-position: 58% center;
+}
+
 @media (min-width: 640px) {
   .hero-bg-image {
+    background-position: center;
+  }
+
+  .dashboard-hero-bg {
     background-position: center;
   }
 }
