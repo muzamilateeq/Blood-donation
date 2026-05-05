@@ -261,7 +261,6 @@ function HeroSection({
         style={{ backgroundImage: "url('/images/blood-donor-hero.png')" }}
       />
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(9,9,11,0.42)_0%,rgba(9,9,11,0.72)_48%,rgba(220,38,38,0.32)_100%)] sm:bg-[linear-gradient(90deg,rgba(9,9,11,0.82)_0%,rgba(9,9,11,0.58)_44%,rgba(220,38,38,0.38)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.96)_100%)]" />
       <div className="absolute inset-x-0 top-0 h-1.5 bg-red-600" />
 
       <div className="mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
