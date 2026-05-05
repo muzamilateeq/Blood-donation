@@ -221,6 +221,7 @@ export default function LandingPage() {
         onQuickSubmit={handleQuickSubmit}
         quickLeadError={quickLeadError}
         quickLead={quickLead}
+        setQuickLeadError={setQuickLeadError}
         setQuickLead={setQuickLead}
       />
 
@@ -245,30 +246,41 @@ export default function LandingPage() {
   );
 }
 
-function HeroSection({ onQuickSubmit, quickLead, quickLeadError, setQuickLead }) {
+function HeroSection({
+  onQuickSubmit,
+  quickLead,
+  quickLeadError,
+  setQuickLead,
+  setQuickLeadError,
+}) {
   return (
-    <section className="relative isolate overflow-hidden bg-[linear-gradient(180deg,#fff_0%,#fff7f7_100%)] lg:bg-white">
+    <section className="relative isolate overflow-hidden bg-zinc-950">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-20 bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/blood-donor-hero.png')" }}
+      />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(9,9,11,0.82)_0%,rgba(9,9,11,0.58)_44%,rgba(220,38,38,0.38)_100%)]" />
+      <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.96)_100%)]" />
       <div className="absolute inset-x-0 top-0 h-1.5 bg-red-600" />
-      <div className="absolute right-0 top-0 -z-10 hidden h-full w-[35%] bg-red-600 lg:block" />
-      <div className="absolute right-[35%] top-0 -z-10 hidden h-full w-24 bg-[linear-gradient(90deg,#fff_0%,#fff5f5_58%,#dc2626_100%)] lg:block" />
 
       <div className="mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
         <header className="flex items-center justify-between py-3">
-          <BrandMark />
+          <BrandMark light />
         </header>
 
         <div className="grid flex-1 items-center gap-7 py-6 sm:py-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:gap-10 lg:py-10">
           <div className="max-w-3xl">
-            <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-red-100 bg-white/90 px-3 py-2 text-xs font-bold text-red-700 shadow-sm shadow-red-950/5 sm:mb-6 sm:px-4 sm:text-sm">
+            <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-2 text-xs font-bold text-white shadow-sm shadow-zinc-950/10 backdrop-blur sm:mb-6 sm:px-4 sm:text-sm">
               <Activity aria-hidden="true" className="h-4 w-4" />
               <span className="truncate">Live donor requests across Pakistan</span>
             </div>
 
-            <h1 className="max-w-4xl text-4xl font-black leading-[1.02] text-zinc-950 sm:text-6xl sm:leading-[0.98] lg:text-7xl">
+            <h1 className="max-w-4xl text-4xl font-black leading-[1.02] text-white sm:text-6xl sm:leading-[0.98] lg:text-7xl">
               Find Blood Donors Anywhere in Pakistan.
             </h1>
 
-            <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg sm:leading-8 lg:text-xl">
+            <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-100 sm:text-lg sm:leading-8 lg:text-xl">
               LifeLink Pakistan helps families and hospitals collect urgent
               donor details, match by city, and contact available donors fast.
             </p>
@@ -288,6 +300,7 @@ function HeroSection({ onQuickSubmit, quickLead, quickLeadError, setQuickLead })
             onSubmit={onQuickSubmit}
             quickLeadError={quickLeadError}
             quickLead={quickLead}
+            setQuickLeadError={setQuickLeadError}
             setQuickLead={setQuickLead}
           />
         </div>
@@ -298,23 +311,29 @@ function HeroSection({ onQuickSubmit, quickLead, quickLeadError, setQuickLead })
 
 function InfoTile({ icon: Icon, label, title }) {
   return (
-    <div className="flex min-h-20 items-center gap-3 rounded-xl border border-zinc-200/80 bg-white/90 p-4 shadow-sm shadow-zinc-950/5 backdrop-blur">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+    <div className="flex min-h-20 items-center gap-3 rounded-xl border border-white/20 bg-white/15 p-4 shadow-sm shadow-zinc-950/10 backdrop-blur-xl">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-red-600">
         <Icon aria-hidden="true" className="h-5 w-5" />
       </div>
       <div className="min-w-0">
-        <p className="text-lg font-black leading-none">{title}</p>
-        <p className="mt-1 text-sm font-semibold text-zinc-500">{label}</p>
+        <p className="text-lg font-black leading-none text-white">{title}</p>
+        <p className="mt-1 text-sm font-semibold text-zinc-100">{label}</p>
       </div>
     </div>
   );
 }
 
-function QuickActionCard({ onSubmit, quickLead, quickLeadError, setQuickLead }) {
+function QuickActionCard({
+  onSubmit,
+  quickLead,
+  quickLeadError,
+  setQuickLead,
+  setQuickLeadError,
+}) {
   return (
     <aside className="relative pb-8 lg:pb-0">
-      <div className="absolute -right-5 -top-5 hidden h-24 w-24 rounded-full border-[18px] border-white/25 lg:block" />
-      <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-2xl shadow-red-950/15 sm:p-6">
+      <div className="absolute -right-5 -top-5 hidden h-24 w-24 rounded-full border-[18px] border-white/20 lg:block" />
+      <div className="rounded-2xl border border-white/30 bg-white/78 p-4 shadow-2xl shadow-zinc-950/25 backdrop-blur-2xl sm:p-6">
         <div className="mb-5 flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-sm font-bold text-red-700">Quick action</p>
