@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="LifeLink Pakistan">
+  <rect width="64" height="64" rx="16" fill="#dc2626"/>
+  <path fill="#fff" d="M32 10c-2.9 6.7-12 16-12 27.1C20 45.4 25.4 52 32 52s12-6.6 12-14.9C44 26 34.9 16.7 32 10z"/>
+  <path fill="none" stroke="#dc2626" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M18 35h8l3-7 6 15 4-8h7"/>
+</svg>
