@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
+import { isSupabaseConfigured, supabaseRestFetch } from "@/lib/supabaseClient";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +23,18 @@ function missingSupabaseResponse() {
   );
 }
 
+function normalizeSupabaseError(error) {
+  if (!error) {
+    return "Supabase request failed.";
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  return error.message || error.details || error.hint || "Supabase request failed.";
+}
+
 export async function POST(request) {
   if (!isSupabaseConfigured) {
     return missingSupabaseResponse();
@@ -43,17 +55,27 @@ export async function POST(request) {
     created_at: new Date().toISOString(),
   };
 
-  const { data, error } = await supabase
-    .from("blood_donors")
-    .insert([donorRecord])
-    .select("id, name, email, phone, city, address, blood_group, created_at")
-    .single();
+  const response = await supabaseRestFetch(
+    "blood_donors?select=id,name,email,phone,city,address,blood_group,created_at",
+    {
+      body: JSON.stringify(donorRecord),
+      headers: {
+        Prefer: "return=representation",
+      },
+      method: "POST",
+    }
+  );
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  const payload = await response.json();
+
+  if (!response.ok) {
+    return NextResponse.json(
+      { error: normalizeSupabaseError(payload) },
+      { status: response.status }
+    );
   }
 
-  return NextResponse.json({ donor: data }, { status: 201 });
+  return NextResponse.json({ donor: payload?.[0] || null }, { status: 201 });
 }
 
 export async function GET(request) {
@@ -72,16 +94,22 @@ export async function GET(request) {
     );
   }
 
-  const { data, error } = await supabase
-    .from("blood_donors")
-    .select("id, name, email, phone, city, address, blood_group, created_at")
-    .eq("city", city)
-    .eq("blood_group", bloodGroup)
-    .order("created_at", { ascending: false });
+  const params = new URLSearchParams({
+    blood_group: `eq.${bloodGroup}`,
+    city: `eq.${city}`,
+    order: "created_at.desc",
+    select: "id,name,email,phone,city,address,blood_group,created_at",
+  });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  const response = await supabaseRestFetch(`blood_donors?${params.toString()}`);
+  const payload = await response.json();
+
+  if (!response.ok) {
+    return NextResponse.json(
+      { error: normalizeSupabaseError(payload) },
+      { status: response.status }
+    );
   }
 
-  return NextResponse.json({ donors: data || [] });
+  return NextResponse.json({ donors: payload || [] });
 }
