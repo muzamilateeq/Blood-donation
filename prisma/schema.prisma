@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model BloodDonor {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  email      String
+  phone      String
+  city       String
+  address    String
+  bloodGroup String   @map("blood_group")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([city, bloodGroup], map: "blood_donors_city_blood_group_idx")
+  @@index([createdAt(sort: Desc)], map: "blood_donors_created_at_idx")
+  @@map("blood_donors")
+}

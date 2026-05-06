@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { isSupabaseConfigured, supabaseRestFetch } from "@/lib/supabaseClient";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -13,33 +13,7 @@ const donorPayloadSchema = z.object({
   blood_group: z.enum(["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]),
 });
 
-function missingSupabaseResponse() {
-  return NextResponse.json(
-    {
-      error:
-        "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
-    },
-    { status: 503 }
-  );
-}
-
-function normalizeSupabaseError(error) {
-  if (!error) {
-    return "Supabase request failed.";
-  }
-
-  if (typeof error === "string") {
-    return error;
-  }
-
-  return error.message || error.details || error.hint || "Supabase request failed.";
-}
-
 export async function POST(request) {
-  if (!isSupabaseConfigured) {
-    return missingSupabaseResponse();
-  }
-
   const body = await request.json();
   const parsed = donorPayloadSchema.safeParse(body);
 
@@ -50,39 +24,42 @@ export async function POST(request) {
     );
   }
 
-  const donorRecord = {
-    ...parsed.data,
-    created_at: new Date().toISOString(),
-  };
-
-  const response = await supabaseRestFetch(
-    "blood_donors?select=id,name,email,phone,city,address,blood_group,created_at",
-    {
-      body: JSON.stringify(donorRecord),
-      headers: {
-        Prefer: "return=representation",
+  try {
+    const donor = await prisma.bloodDonor.create({
+      data: {
+        address: parsed.data.address,
+        bloodGroup: parsed.data.blood_group,
+        city: parsed.data.city,
+        email: parsed.data.email,
+        name: parsed.data.name,
+        phone: parsed.data.phone,
       },
-      method: "POST",
-    }
-  );
+    });
 
-  const payload = await response.json();
-
-  if (!response.ok) {
     return NextResponse.json(
-      { error: normalizeSupabaseError(payload) },
-      { status: response.status }
+      {
+        donor: {
+          address: donor.address,
+          blood_group: donor.bloodGroup,
+          city: donor.city,
+          created_at: donor.createdAt,
+          email: donor.email,
+          id: donor.id,
+          name: donor.name,
+          phone: donor.phone,
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: error.message || "Unable to save donor details." },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({ donor: payload?.[0] || null }, { status: 201 });
 }
 
 export async function GET(request) {
-  if (!isSupabaseConfigured) {
-    return missingSupabaseResponse();
-  }
-
   const { searchParams } = new URL(request.url);
   const city = searchParams.get("city");
   const bloodGroup = searchParams.get("blood_group");
@@ -94,22 +71,35 @@ export async function GET(request) {
     );
   }
 
-  const params = new URLSearchParams({
-    blood_group: `eq.${bloodGroup}`,
-    city: `eq.${city}`,
-    order: "created_at.desc",
-    select: "id,name,email,phone,city,address,blood_group,created_at",
-  });
+  try {
+    const donors = await prisma.bloodDonor.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      where: {
+        bloodGroup,
+        city,
+      },
+    });
 
-  const response = await supabaseRestFetch(`blood_donors?${params.toString()}`);
-  const payload = await response.json();
-
-  if (!response.ok) {
     return NextResponse.json(
-      { error: normalizeSupabaseError(payload) },
-      { status: response.status }
+      {
+        donors: donors.map((donor) => ({
+          address: donor.address,
+          blood_group: donor.bloodGroup,
+          city: donor.city,
+          created_at: donor.createdAt,
+          email: donor.email,
+          id: donor.id,
+          name: donor.name,
+          phone: donor.phone,
+        })),
+      }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: error.message || "Unable to search donors." },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({ donors: payload || [] });
 }
